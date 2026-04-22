@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(ParticleSim CUDA CXX)
+project(ParticleSim CUDA CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CUDA_STANDARD 17)
@@ -14,6 +14,8 @@ add_executable(particle_sim
     src/particle_gpu.cu
     src/glad.c
 )
+
+set_source_files_properties(src/glad.c PROPERTIES LANGUAGE C)
 
 target_include_directories(particle_sim PRIVATE
     include/

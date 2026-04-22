@@ -1,0 +1,26 @@
+[
+{
+  "directory": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v13.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -I\"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\\cccl\" -D_WINDOWS -Xcompiler=\" /EHsc\" -Xcompiler=\" -Zi -Ob0 -Od /RTC1\" -std=c++17 \"--generate-code=arch=compute_89,code=[compute_89,sm_89]\" -Xcompiler=-MDd -x cu -c \"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\src\\main.cu\" -o CMakeFiles\\particle_sim.dir\\src\\main.cu.obj -Xcompiler=-FdCMakeFiles\\particle_sim.dir\\,-FS",
+  "file": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/src/main.cu",
+  "output": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build/CMakeFiles/particle_sim.dir/src/main.cu.obj"
+},
+{
+  "directory": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build",
+  "command": "C:\\PROGRA~1\\MICROS~2\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -I\"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\\cccl\" /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\particle_sim.dir\\src\\particle_cpu.cpp.obj /FdCMakeFiles\\particle_sim.dir\\ /FS -c \"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\src\\particle_cpu.cpp\"",
+  "file": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/src/particle_cpu.cpp",
+  "output": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build/CMakeFiles/particle_sim.dir/src/particle_cpu.cpp.obj"
+},
+{
+  "directory": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build",
+  "command": "C:\\PROGRA~1\\NVIDIA~2\\CUDA\\v13.2\\bin\\nvcc.exe -forward-unknown-to-host-compiler -I\"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\\cccl\" -D_WINDOWS -Xcompiler=\" /EHsc\" -Xcompiler=\" -Zi -Ob0 -Od /RTC1\" -std=c++17 \"--generate-code=arch=compute_89,code=[compute_89,sm_89]\" -Xcompiler=-MDd -x cu -c \"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\src\\particle_gpu.cu\" -o CMakeFiles\\particle_sim.dir\\src\\particle_gpu.cu.obj -Xcompiler=-FdCMakeFiles\\particle_sim.dir\\,-FS",
+  "file": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/src/particle_gpu.cu",
+  "output": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build/CMakeFiles/particle_sim.dir/src/particle_gpu.cu.obj"
+},
+{
+  "directory": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build",
+  "command": "C:\\PROGRA~1\\MICROS~2\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\cl.exe  /nologo -I\"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\" -I\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v13.2\\include\\cccl\" -TC /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\particle_sim.dir\\src\\glad.c.obj /FdCMakeFiles\\particle_sim.dir\\ /FS -c \"C:\\Users\\Jhenson\\OneDrive\\Desktop\\cs4220 project\\particle-sim\\src\\glad.c\"",
+  "file": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/src/glad.c",
+  "output": "C:/Users/Jhenson/OneDrive/Desktop/cs4220 project/particle-sim/build/CMakeFiles/particle_sim.dir/src/glad.c.obj"
+}
+]
