@@ -7,7 +7,7 @@
 #include "particle_cpu.h"
 
 
-const int N = 1000; // The number of particles to simulate at once
+const int N = 10000; // The number of particles to simulate at once
 const float DT = 0.016f; 
 
 // ---- Shader sources ---- //

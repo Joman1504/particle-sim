@@ -1,0 +1,26 @@
+# Build output
+build/
+
+# Compiled artifacts (if ever built outside build/)
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+*.lib
+*.exp
+*.ptx
+*.cubin
+*.fatbin
+
+# CMake user files
+CMakeUserPresets.json
+
+# VS Code (machine-specific settings only — keep extensions.json if you have it)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/c_cpp_properties.json
+
+# Windows
+Thumbs.db
+Desktop.ini
