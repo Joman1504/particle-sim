@@ -1,6 +1,0 @@
-# ninja log v7
-8	66	7986255963093958	CMakeFiles/particle_sim.dir/src/particle_cpu.cpp.obj	170d3c64ebd2aed1
-9	841	7986010730001380	CMakeFiles/particle_sim.dir/src/particle_gpu.cu.obj	b415cc7e5e6fc789
-2	1637	7993175233469684	CMakeFiles/particle_sim.dir/src/main.cu.obj	fcdd9a9e4d6f48d9
-9	203	7986020179201044	CMakeFiles/particle_sim.dir/src/glad.c.obj	bb8a4f65e81921da
-1638	1745	7993175249821499	particle_sim.exe	92672e7ea73f80e1
