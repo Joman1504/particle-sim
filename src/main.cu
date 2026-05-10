@@ -10,7 +10,7 @@
 #include "particle_gpu.h"
 
 
-const int   N  = 1000000; // number of particles
+const int   N  = 10000000; // number of particles
 const float DT = 0.016f;
 
 // ---- Simulation mode ---- //

@@ -56,7 +56,7 @@ __global__ void updateKernel(Particle* particles, int n, float dt) {
 // ---- Kernel: mouse attraction ---- //
 // Each thread applies an attraction force toward (mx, my) in NDC for one particle.
 __global__ void attractionKernel(Particle* particles, int n,
-                                  float mx, float my, float dt) {
+                                float mx, float my, float dt) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n) return;
 
@@ -111,7 +111,7 @@ void updateParticlesGPU(Particle* d_particles, int n, float dt) {
 
 
 void applyAttractionGPU(Particle* d_particles, int n,
-                         float mx, float my, float dt) {
+                        float mx, float my, float dt) {
     int gridSize = (n + BLOCK_SIZE - 1) / BLOCK_SIZE;
     attractionKernel<<<gridSize, BLOCK_SIZE>>>(d_particles, n, mx, my, dt);
 } // end applyAttractionGPU
