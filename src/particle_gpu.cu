@@ -19,10 +19,12 @@
 
 // ---- Kernel: physics update ---- //
 // Each thread updates one particle: applies gravity, integrates position,
-// and bounces off the four walls.
+// and bounces off the four walls using the particle's own radius.
 __global__ void updateKernel(Particle* particles, int n, float dt) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n) return;
+
+    const float r = particles[i].r;
 
     // Apply gravity
     particles[i].vy += GRAVITY * dt;
@@ -31,23 +33,23 @@ __global__ void updateKernel(Particle* particles, int n, float dt) {
     particles[i].x += particles[i].vx * dt;
     particles[i].y += particles[i].vy * dt;
 
-    // Boundary collision - X axis
-    if (particles[i].x > BOUND_X) {
-        particles[i].x = BOUND_X;
+    // Boundary collision - X axis (wall at ± BOUND_X, particle edge at x ± r)
+    if (particles[i].x + r > BOUND_X) {
+        particles[i].x = BOUND_X - r;
         particles[i].vx *= -RESTITUTION;
     }
-    if (particles[i].x < -BOUND_X) {
-        particles[i].x = -BOUND_X;
+    if (particles[i].x - r < -BOUND_X) {
+        particles[i].x = -BOUND_X + r;
         particles[i].vx *= -RESTITUTION;
     }
 
     // Boundary collision - Y axis
-    if (particles[i].y > BOUND_Y) {
-        particles[i].y = BOUND_Y;
+    if (particles[i].y + r > BOUND_Y) {
+        particles[i].y = BOUND_Y - r;
         particles[i].vy *= -RESTITUTION;
     }
-    if (particles[i].y < -BOUND_Y) {
-        particles[i].y = -BOUND_Y;
+    if (particles[i].y - r < -BOUND_Y) {
+        particles[i].y = -BOUND_Y + r;
         particles[i].vy *= -RESTITUTION;
     }
 } // end updateKernel
@@ -85,16 +87,19 @@ __global__ void extractPositionsKernel(const Particle* particles,
 
 // ---- Host wrappers ---- //
 
-// Allocates device memory for n particles, initializes with random state,
-// and uploads to the device. Sets *d_particles to the device pointer.
+// Allocates device memory for n particles, fills with random state
+// (including radius), and uploads to the device.
+// Note: main immediately overwrites slots [0, currentN) with the host
+// particle state via cudaMemcpy, so the random data here only persists
+// for the uninitialised tail [currentN, n).
 void initParticlesGPU(Particle** d_particles, int n) {
-    // Fill a temporary host array with random positions and velocities
     Particle* h_temp = new Particle[n];
     for (int i = 0; i < n; i++) {
         h_temp[i].x  = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
         h_temp[i].y  = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
         h_temp[i].vx = ((float)rand() / RAND_MAX) * 0.02f - 0.01f;
         h_temp[i].vy = ((float)rand() / RAND_MAX) * 0.02f - 0.01f;
+        h_temp[i].r  = R_MIN + ((float)rand() / RAND_MAX) * (R_MAX - R_MIN);
     }
 
     cudaMalloc(d_particles, n * sizeof(Particle));
