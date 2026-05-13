@@ -20,15 +20,15 @@
 // Simulation constants
 // ============================================================
 
-const int   MAX_N  = 10000000;
-const int   MIN_N  = 100;
-const int   STEP_N = 10000;
-const float DT     = 0.016f;
+const int   MAX_N  = 10000000; // Upper particle count limit (GPU mem limit).
+const int   MIN_N  = 1000;      // Lower particle count limit (for UI).
+const int   STEP_N = 10000;     // Particle count change step when pressing +/-.
+const float DT     = 0.016f;    // Simulation timestep (seconds per frame).
 
 // Same magnitude as simulation gravity when gravity is on (must match physics files).
 const float BASE_GRAVITY = -9.8f;
 
-// dt multiplier when combined float + slow-mo mode is on.
+// dt multiplier when slow-mo is enabled (smaller = slower simulation).
 const float SLOW_MO_FACTOR = 0.25f;
 
 const float VIEWPORT_W = 1920.0f;
@@ -37,7 +37,7 @@ const float VIEWPORT_H = 1080.0f;
 // ============================================================
 // Triangle obstacle
 // ============================================================
-
+// Triangle struct and point-in-triangle test for mouse interaction and collisions.
 struct Triangle {
     float x1, y1;
     float x2, y2;
@@ -58,13 +58,16 @@ float dragOffsetY = 0.0f;
 // Simulation state
 // ============================================================
 
-bool  useGPU     = false;
-int   currentN   = 10000;
-float windX      = 0.0f;
-float spawnSpeed = 0.5f;
+bool  useGPU     = false; // starts in CPU mode
+int   currentN   = 10000; // starts with 10k particles
+float windX      = 0.0f;  // horizontal wind strength (NDC/s)
+float spawnSpeed = 0.5f;  // downward respawn speed (NDC/s); forced to 0 while zero-G is on
 
-// Zero-G + slow-mo together (toggle with M).
-bool floatSlowMo = false;
+// Restored when leaving zero-G (see Z key).
+float spawnSpeedRestore = 0.5f;
+
+bool zeroGravity = false;
+bool slowMo      = false;
 
 // ============================================================
 // Host arrays
@@ -283,13 +286,33 @@ void keyCallback(GLFWwindow* window,
         action == GLFW_REPEAT))
         setParticleCount(currentN - STEP_N);
 
+    if (key == GLFW_KEY_Z &&
+        action == GLFW_PRESS) {
+
+        if (!zeroGravity) {
+
+            spawnSpeedRestore = spawnSpeed;
+            spawnSpeed = 0.0f;
+            zeroGravity = true;
+
+            std::cout << "[Zero-G] on (spawnSpeed = 0)\n";
+        }
+        else {
+
+            spawnSpeed = spawnSpeedRestore;
+            zeroGravity = false;
+
+            std::cout << "[Zero-G] off\n";
+        }
+    }
+
     if (key == GLFW_KEY_M &&
         action == GLFW_PRESS) {
 
-        floatSlowMo = !floatSlowMo;
+        slowMo = !slowMo;
 
-        std::cout << "[Float + slow-mo] "
-                  << (floatSlowMo ? "on\n" : "off\n");
+        std::cout << "[Slow-mo] "
+                  << (slowMo ? "on\n" : "off\n");
     }
 }
 
@@ -588,10 +611,10 @@ int main() {
         frameCount++;
 
         const float gravityY =
-            floatSlowMo ? 0.0f : BASE_GRAVITY;
+            zeroGravity ? 0.0f : BASE_GRAVITY;
 
         const float simDt =
-            DT * (floatSlowMo ? SLOW_MO_FACTOR : 1.0f);
+            DT * (slowMo ? SLOW_MO_FACTOR : 1.0f);
 
         if (useGPU) {
 
@@ -757,11 +780,12 @@ int main() {
         std::snprintf(
             titleBuf,
             sizeof(titleBuf),
-            "Particle Sim | %s | N = %d | %.1f FPS | %s",
+            "Particle Sim | %s | N = %d | %.1f FPS | %s | sim %.2fx",
             useGPU ? "GPU" : "CPU",
             currentN,
             fpsDisplay,
-            floatSlowMo ? "float+slo-mo" : "standard");
+            zeroGravity ? "zero-G" : "gravity",
+            slowMo ? SLOW_MO_FACTOR : 1.0f);
 
         glfwSetWindowTitle(window, titleBuf);
     }
