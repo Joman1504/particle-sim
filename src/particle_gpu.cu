@@ -18,39 +18,54 @@
 
 
 // ---- Kernel: physics update ---- //
-// Each thread updates one particle: applies gravity, integrates position,
-// and bounces off the four walls using the particle's own radius.
-__global__ void updateKernel(Particle* particles, int n, float dt) {
+// Each thread updates one particle: applies gravity and wind, integrates
+// position, bounces off left/right/top walls, and respawns at the top
+// when the particle exits through the bottom.
+//
+// Respawn uses a fast integer hash of (particle index, seed) to pick a
+// pseudo-random X so the top edge fills evenly across frames.
+__global__ void updateKernel(Particle* particles, int n, float dt,
+                              float windX, float spawnSpeed, unsigned int seed) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n) return;
 
     const float r = particles[i].r;
 
-    // Apply gravity
+    // Apply gravity and horizontal wind
     particles[i].vy += GRAVITY * dt;
+    particles[i].vx += windX  * dt;
 
     // Integrate position
     particles[i].x += particles[i].vx * dt;
     particles[i].y += particles[i].vy * dt;
 
-    // Boundary collision - X axis (wall at ± BOUND_X, particle edge at x ± r)
+    // Left / right wall bounce
     if (particles[i].x + r > BOUND_X) {
-        particles[i].x = BOUND_X - r;
+        particles[i].x  =  BOUND_X - r;
         particles[i].vx *= -RESTITUTION;
     }
     if (particles[i].x - r < -BOUND_X) {
-        particles[i].x = -BOUND_X + r;
+        particles[i].x  = -BOUND_X + r;
         particles[i].vx *= -RESTITUTION;
     }
 
-    // Boundary collision - Y axis
+    // Top wall bounce (prevents upward escape under strong reverse wind)
     if (particles[i].y + r > BOUND_Y) {
-        particles[i].y = BOUND_Y - r;
+        particles[i].y  =  BOUND_Y - r;
         particles[i].vy *= -RESTITUTION;
     }
+
+    // Bottom exit — respawn at top with a fresh random X position
     if (particles[i].y - r < -BOUND_Y) {
-        particles[i].y = -BOUND_Y + r;
-        particles[i].vy *= -RESTITUTION;
+        // Integer hash of index + seed for cheap per-thread randomness
+        unsigned int h = ((unsigned int)i + 1u) * 2654435761u ^ seed;
+        h ^= h >> 16;
+        float rx = ((float)(h & 0x00FFFFFFu) / (float)0x01000000u) * 2.0f - 1.0f;
+
+        particles[i].x  = rx;
+        particles[i].y  = BOUND_Y - r;
+        particles[i].vx = 0.0f;
+        particles[i].vy = -spawnSpeed;
     }
 } // end updateKernel
 
@@ -109,9 +124,11 @@ void initParticlesGPU(Particle** d_particles, int n) {
 } // end initParticlesGPU
 
 
-void updateParticlesGPU(Particle* d_particles, int n, float dt) {
+void updateParticlesGPU(Particle* d_particles, int n, float dt,
+                        float windX, float spawnSpeed, unsigned int seed) {
     int gridSize = (n + BLOCK_SIZE - 1) / BLOCK_SIZE;
-    updateKernel<<<gridSize, BLOCK_SIZE>>>(d_particles, n, dt);
+    updateKernel<<<gridSize, BLOCK_SIZE>>>(d_particles, n, dt,
+                                           windX, spawnSpeed, seed);
 } // end updateParticlesGPU
 
 

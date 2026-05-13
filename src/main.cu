@@ -23,8 +23,10 @@ const float VIEWPORT_W = 1920.0f;
 const float VIEWPORT_H = 1080.0f;
 
 // ---- Simulation state (globals for callback access) ---- //
-bool useGPU   = false;
-int  currentN = 1000000; // currently active particle count
+bool  useGPU     = false;
+int   currentN   = 1000000; // currently active particle count
+float windX      = 0.0f;    // horizontal wind force (NDC/s²), +ve = right
+float spawnSpeed = 0.5f;    // downward speed given to particles on respawn
 
 // ---- Host arrays ---- //
 Particle* h_particles = nullptr; // physics data          (MAX_N slots)
@@ -100,11 +102,13 @@ GLuint compileShader(GLenum type, const char* src) {
 // The new range is synced to the device if currently in GPU mode.
 void initParticlesRange(int start, int count) {
     for (int i = start; i < start + count; i++) {
+        // Spread particles across the full screen initially so the view
+        // fills immediately; they settle into the top-spawn flow naturally.
         h_particles[i].x  = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
         h_particles[i].y  = ((float)rand() / RAND_MAX) * 2.0f - 1.0f;
-        h_particles[i].vx = ((float)rand() / RAND_MAX) * 0.02f - 0.01f;
-        h_particles[i].vy = ((float)rand() / RAND_MAX) * 0.02f - 0.01f;
-        h_particles[i].r  = h_radii[i]; // read from pre-generated table
+        h_particles[i].vx = 0.0f;
+        h_particles[i].vy = -spawnSpeed;
+        h_particles[i].r  = h_radii[i];
     }
     if (useGPU && d_particles != nullptr) {
         cudaMemcpy(d_particles + start, h_particles + start,
@@ -148,6 +152,16 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         setParticleCount(currentN + STEP_N);
     if (key == GLFW_KEY_MINUS && (action == GLFW_PRESS || action == GLFW_REPEAT))
         setParticleCount(currentN - STEP_N);
+
+    // Arrow keys: adjust wind (left/right) and spawn speed (up/down)
+    if (key == GLFW_KEY_LEFT  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+        windX -= 1.0f;
+    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
+        windX += 1.0f;
+    if (key == GLFW_KEY_UP    && (action == GLFW_PRESS || action == GLFW_REPEAT))
+        spawnSpeed = std::min(spawnSpeed + 0.1f, 5.0f);
+    if (key == GLFW_KEY_DOWN  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+        spawnSpeed = std::max(spawnSpeed - 0.1f, 0.1f);
 
     // 1-9: jump to 1M-9M;  0: jump to MAX_N (10M)
     if (key >= GLFW_KEY_1 && key <= GLFW_KEY_9 && action == GLFW_PRESS)
@@ -267,10 +281,12 @@ int main() {
     bool   attracting = false;
 
     std::cout << "Controls:\n";
-    std::cout << "  G        : toggle CPU / GPU mode\n";
-    std::cout << "  = / -    : add / remove 500K particles (hold to repeat)\n";
-    std::cout << "  1-9 / 0  : jump to 1M-9M / 10M particles\n";
-    std::cout << "  LMB      : attract particles toward cursor\n";
+    std::cout << "  G            : toggle CPU / GPU mode\n";
+    std::cout << "  = / -        : add / remove 500K particles (hold to repeat)\n";
+    std::cout << "  1-9 / 0      : jump to 1M-9M / 10M particles\n";
+    std::cout << "  LMB          : attract particles toward cursor\n";
+    std::cout << "  Left / Right : decrease / increase wind force\n";
+    std::cout << "  Up / Down    : increase / decrease spawn speed\n";
 
     // ---------------- Render loop ----------------
     while (!glfwWindowShouldClose(window)) {
@@ -282,11 +298,14 @@ int main() {
         float mxNDC = (float)(mouseX / VIEWPORT_W) * 2.0f - 1.0f;
         float myNDC = 1.0f - (float)(mouseY / VIEWPORT_H) * 2.0f; // flip Y
 
+        static unsigned int frameCount = 0;
+        ++frameCount;
+
         if (useGPU) {
             // ---- GPU path ---- //
             if (attracting)
                 applyAttractionGPU(d_particles, currentN, mxNDC, myNDC, DT);
-            updateParticlesGPU(d_particles, currentN, DT);
+            updateParticlesGPU(d_particles, currentN, DT, windX, spawnSpeed, frameCount);
 
             // Map posVBO into CUDA; extract positions directly — no host copy.
             float*  d_positions = nullptr;
@@ -311,7 +330,7 @@ int main() {
                 }
             }
 
-            updateParticlesCPU(h_particles, currentN, DT);
+            updateParticlesCPU(h_particles, currentN, DT, windX, spawnSpeed, frameCount);
 
             for (int i = 0; i < currentN; i++) {
                 h_positions[i * 2]     = h_particles[i].x;
@@ -341,9 +360,9 @@ int main() {
 
         char title[256];
         snprintf(title, sizeof(title),
-                 "Particle Sim  |  %s  |  N: %d  |  FPS: %d  |  %.2f ms",
+                 "Particle Sim  |  %s  |  N: %d  |  FPS: %d  |  %.2f ms  |  Wind: %.1f  |  Speed: %.1f",
                  useGPU ? "GPU (G=CPU)" : "CPU (G=GPU)",
-                 currentN, fps, ms);
+                 currentN, fps, ms, windX, spawnSpeed);
         glfwSetWindowTitle(window, title);
 
     } // end render loop

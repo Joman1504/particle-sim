@@ -29,36 +29,46 @@ void initParticlesCPU(Particle* particles, int n) {
 }; // end initParticlesCPU
 
 
-// Updates particle physics: gravity, integration, radius-aware wall bouncing.
-void updateParticlesCPU(Particle* particles, int n, float dt) {
+// Updates particle physics: gravity, wind, integration, wall bouncing,
+// and bottom-exit respawn.
+void updateParticlesCPU(Particle* particles, int n, float dt,
+                        float windX, float spawnSpeed, unsigned int seed) {
     for (int i = 0; i < n; i++) {
         const float r = particles[i].r;
 
-        // Apply gravity
+        // Apply gravity and horizontal wind
         particles[i].vy += GRAVITY * dt;
+        particles[i].vx += windX  * dt;
 
         // Integrate position
         particles[i].x += particles[i].vx * dt;
         particles[i].y += particles[i].vy * dt;
 
-        // Boundary collision - X axis (wall at ± BOUND_X, particle edge at x ± r)
+        // Left / right wall bounce
         if (particles[i].x + r > BOUND_X) {
-            particles[i].x = BOUND_X - r;
+            particles[i].x  =  BOUND_X - r;
             particles[i].vx *= -RESTITUTION;
         }
         if (particles[i].x - r < -BOUND_X) {
-            particles[i].x = -BOUND_X + r;
+            particles[i].x  = -BOUND_X + r;
             particles[i].vx *= -RESTITUTION;
         }
 
-        // Boundary collision - Y axis
+        // Top wall bounce
         if (particles[i].y + r > BOUND_Y) {
-            particles[i].y = BOUND_Y - r;
+            particles[i].y  =  BOUND_Y - r;
             particles[i].vy *= -RESTITUTION;
         }
+
+        // Bottom exit — respawn at top with a fresh random X position
         if (particles[i].y - r < -BOUND_Y) {
-            particles[i].y = -BOUND_Y + r;
-            particles[i].vy *= -RESTITUTION;
+            unsigned int h = ((unsigned int)i + 1u) * 2654435761u ^ seed;
+            h ^= h >> 16;
+            float rx = ((float)(h & 0x00FFFFFFu) / (float)0x01000000u) * 2.0f - 1.0f;
+            particles[i].x  = rx;
+            particles[i].y  = BOUND_Y - r;
+            particles[i].vx = 0.0f;
+            particles[i].vy = -spawnSpeed;
         }
-    }; // end for
-}; // end updateParticlesCPU
+    }
+} // end updateParticlesCPU
