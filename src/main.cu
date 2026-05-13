@@ -20,7 +20,7 @@
 // Simulation constants
 // ============================================================
 
-const int   MAX_N  = 100000000; // Upper particle count limit 
+const int   MAX_N  = 200000000; // Upper particle count limit 
 const int   MIN_N  = 1000;      // Lower particle count limit 
 const int   STEP_N = 100000;     // Particle count change step when pressing +/-.
 const float DT     = 0.016f;    // Simulation timestep (seconds per frame).
@@ -300,6 +300,26 @@ void keyCallback(GLFWwindow* window,
     if (key == GLFW_KEY_4 &&
         action == GLFW_PRESS)
         setParticleCount(10000000);
+
+    // Keys 5-8: high-N presets — auto-switch to GPU to prevent CPU lockup.
+    if ((key == GLFW_KEY_5 || key == GLFW_KEY_6 ||
+         key == GLFW_KEY_7 || key == GLFW_KEY_8) &&
+        action == GLFW_PRESS) {
+
+        if (!useGPU) {
+            cudaMemcpy(d_particles,
+                       h_particles,
+                       currentN * sizeof(Particle),
+                       cudaMemcpyHostToDevice);
+            useGPU = true;
+            std::cout << "[Mode] GPU (auto-switched for high-N preset)\n";
+        }
+
+        if (key == GLFW_KEY_5) setParticleCount(25000000);
+        if (key == GLFW_KEY_6) setParticleCount(50000000);
+        if (key == GLFW_KEY_7) setParticleCount(75000000);
+        if (key == GLFW_KEY_8) setParticleCount(100000000);
+    }
 
     if (key == GLFW_KEY_Z &&
         action == GLFW_PRESS) {
