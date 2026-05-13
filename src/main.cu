@@ -286,6 +286,22 @@ void keyCallback(GLFWwindow* window,
         action == GLFW_REPEAT))
         setParticleCount(currentN - STEP_N);
 
+    if (key == GLFW_KEY_1 &&
+        action == GLFW_PRESS)
+        setParticleCount(10000);
+
+    if (key == GLFW_KEY_2 &&
+        action == GLFW_PRESS)
+        setParticleCount(100000);
+
+    if (key == GLFW_KEY_3 &&
+        action == GLFW_PRESS)
+        setParticleCount(1000000);
+
+    if (key == GLFW_KEY_4 &&
+        action == GLFW_PRESS)
+        setParticleCount(10000000);
+
     if (key == GLFW_KEY_Z &&
         action == GLFW_PRESS) {
 
