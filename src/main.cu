@@ -709,6 +709,34 @@ int main() {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        // Title bar: mode, particle count, smoothed framerate (EMA of 1/dt)
+        static auto prevLoopTime = std::chrono::steady_clock::now();
+        static double fpsDisplay = 0.0;
+
+        const auto loopTime = std::chrono::steady_clock::now();
+        const double loopDt =
+            std::chrono::duration<double>(loopTime - prevLoopTime).count();
+        prevLoopTime = loopTime;
+
+        if (loopDt > 1e-6) {
+            const double instantFps = 1.0 / loopDt;
+            fpsDisplay =
+                (fpsDisplay < 1e-6)
+                    ? instantFps
+                    : (fpsDisplay * 0.9 + instantFps * 0.1);
+        }
+
+        char titleBuf[192];
+        std::snprintf(
+            titleBuf,
+            sizeof(titleBuf),
+            "Particle Sim | %s | N = %d | %.1f FPS",
+            useGPU ? "GPU" : "CPU",
+            currentN,
+            fpsDisplay);
+
+        glfwSetWindowTitle(window, titleBuf);
     }
 
     // ========================================================
