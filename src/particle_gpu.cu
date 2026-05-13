@@ -235,21 +235,29 @@ __device__ __host__ static void resolveParticleTriangleCollision(
     Particle* p,
     float x1, float y1, float x2, float y2, float x3, float y3) {
 
+    // Small epsilon to prevent particles from getting stuck in the triangle due to
+    // floating point imprecision. This is added to the radius when resolving
+    // penetration, so it effectively makes the particle slightly larger for collision purposes.
     const float eps = 3e-4f;
     const float r = p->r;
     float px = p->x;
     float py = p->y;
 
+    // Find closest point on triangle boundary and its distance to the particle center.
     float cx, cy;
     float distSq = closestPointOnTriangleBoundarySq(
         px, py, x1, y1, x2, y2, x3, y3, &cx, &cy);
     float dist = sqrtf(distSq);
 
+    // Check if the particle center is inside the triangle or within radius distance of the boundary.
     bool inside = pointInTriangleDev(px, py, x1, y1, x2, y2, x3, y3);
 
+    // If the center is outside and not within radius distance, no collision.
     if (!inside && dist >= r - 1e-9f)
         return;
 
+    // Compute outward normal. If the center is very close to the boundary, 
+    // use the triangle centroid for a stable normal direction.
     float nx, ny;
     if (dist < 1e-7f) {
         float gx = (x1 + x2 + x3) * (1.0f / 3.0f);
@@ -273,9 +281,11 @@ __device__ __host__ static void resolveParticleTriangleCollision(
         ny = (py - cy) / dist;
     }
 
+    // Resolve penetration by moving the particle to the edge of the triangle plus epsilon.
     p->x = cx + nx * (r + eps);
     p->y = cy + ny * (r + eps);
 
+    // Reflect velocity along the normal, applying restitution.
     float vn = p->vx * nx + p->vy * ny;
     if (vn < 0.0f) {
         float j = -(1.0f + RESTITUTION) * vn;
@@ -299,18 +309,6 @@ __global__ void triangleCollisionKernel(
         &particles[i], x1, y1, x2, y2, x3, y3);
 }
 
-void collideParticlesWithTriangleCPU(
-    Particle* particles,
-    int n,
-    float x1, float y1,
-    float x2, float y2,
-    float x3, float y3) {
-
-    for (int i = 0; i < n; ++i)
-        resolveParticleTriangleCollision(
-            &particles[i], x1, y1, x2, y2, x3, y3);
-}
-
 void collideParticlesWithTriangleGPU(
     Particle* d_particles,
     int n,
@@ -329,6 +327,18 @@ void collideParticlesWithTriangleGPU(
         x1, y1,
         x2, y2,
         x3, y3);
+}
+
+void collideParticlesWithTriangleCPU(
+    Particle* particles,
+    int n,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3) {
+
+    for (int i = 0; i < n; ++i)
+        resolveParticleTriangleCollision(
+            &particles[i], x1, y1, x2, y2, x3, y3);
 }
 
 void freeParticlesGPU(Particle* d_particles) {
