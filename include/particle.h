@@ -6,8 +6,8 @@
 // ---- Particle radius range (NDC units) ---- //
 // Used by init, boundary checks, and (upcoming) collision detection.
 // Cell size for the uniform collision grid = 2 * R_MAX.
-constexpr float R_MIN = 0.005f;
-constexpr float R_MAX = 0.005f;
+constexpr float R_MIN = 0.001f;
+constexpr float R_MAX = 0.001f;
 
 struct Particle {
     float x, y;   // position  (NDC)

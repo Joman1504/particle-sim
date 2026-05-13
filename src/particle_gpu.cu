@@ -62,8 +62,14 @@ __global__ void updateKernel(Particle* particles, int n, float dt,
         h ^= h >> 16;
         float rx = ((float)(h & 0x00FFFFFFu) / (float)0x01000000u) * 2.0f - 1.0f;
 
+        // Second hash for vertical jitter — prevents horizontal banding that
+        // forms when every same-frame respawn lands at exactly y = BOUND_Y - r.
+        unsigned int h2 = h * 2246822519u;
+        h2 ^= h2 >> 13;
+        float yJitter = ((float)(h2 & 0x00FFFFFFu) / (float)0x01000000u) * 0.4f;
+
         particles[i].x  = rx;
-        particles[i].y  = BOUND_Y - r;
+        particles[i].y  = BOUND_Y - r - yJitter;
         particles[i].vx = 0.0f;
         particles[i].vy = -spawnSpeed;
     }

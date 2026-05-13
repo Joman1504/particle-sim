@@ -14,8 +14,8 @@
 
 // ---- Simulation constants ---- //
 const int   MAX_N  = 10000000; // maximum particle capacity (pre-allocated)
-const int   MIN_N  = 100000;   // minimum allowed particle count
-const int   STEP_N = 500000;   // add/remove step size
+const int   MIN_N  = 10000;   // minimum allowed particle count
+const int   STEP_N = 10000;   // add/remove step size
 const float DT     = 0.016f;
 
 // ---- Viewport dimensions (used for NDC -> pixel radius conversion) ---- //
@@ -24,7 +24,7 @@ const float VIEWPORT_H = 1080.0f;
 
 // ---- Simulation state (globals for callback access) ---- //
 bool  useGPU     = false;
-int   currentN   = 1000000; // currently active particle count
+int   currentN   = 10000; // currently active particle count
 float windX      = 0.0f;    // horizontal wind force (NDC/s²), +ve = right
 float spawnSpeed = 0.5f;    // downward speed given to particles on respawn
 
