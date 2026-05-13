@@ -78,3 +78,18 @@ void updateParticlesCPU(Particle* particles, int n, float dt,
         }
     }
 } // end updateParticlesCPU
+
+
+void applyAttractionCPU(Particle* particles, int n,
+                        float mx, float my, float dt) {
+    for (int i = 0; i < n; i++) {
+
+        float dx     = mx - particles[i].x;
+        float dy     = my - particles[i].y;
+        float distSq = dx * dx + dy * dy + 0.0001f;
+        float force  = 4.0f / distSq;
+
+        particles[i].vx += force * dx * dt;
+        particles[i].vy += force * dy * dt;
+    }
+} // end applyAttractionCPU

@@ -85,6 +85,7 @@ particle-sim/
 ├── include/
 │   ├── particle.h         # Particle struct (x, y, vx, vy)
 │   ├── particle_cpu.h     # CPU function declarations
+│   ├── particle_gpu.h     # GPU function declarations
 │   ├── glad/              # GLAD headers
 │   ├── GLFW/              # GLFW headers
 │   └── KHR/               # Khronos platform header

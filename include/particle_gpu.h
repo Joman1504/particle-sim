@@ -25,3 +25,19 @@ void extractPositionsGPU(const Particle* d_particles, float* d_positions, int n)
 
 // Frees GPU particle memory.
 void freeParticlesGPU(Particle* d_particles);
+
+// Collides particles with a triangle defined by (x1, y1), (x2, y2), (x3, y3).
+void collideParticlesWithTriangleGPU(
+    Particle* d_particles,
+    int n,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3);
+
+// Same collision rules on the host (CPU path).
+void collideParticlesWithTriangleCPU(
+    Particle* particles,
+    int n,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3);

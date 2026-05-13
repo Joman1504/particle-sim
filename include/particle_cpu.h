@@ -14,3 +14,7 @@ void initParticlesCPU(Particle* particles, int n);
 // seed       — per-frame value used to randomise respawn X positions
 void updateParticlesCPU(Particle* particles, int n, float dt,
                         float windX, float spawnSpeed, unsigned int seed);
+
+// Pulls each particle toward (mx, my) in NDC (same model as applyAttractionGPU).
+void applyAttractionCPU(Particle* particles, int n,
+                        float mx, float my, float dt);

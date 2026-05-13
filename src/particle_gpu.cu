@@ -150,6 +150,185 @@ void extractPositionsGPU(const Particle* d_particles, float* d_positions, int n)
     extractPositionsKernel<<<gridSize, BLOCK_SIZE>>>(d_particles, d_positions, n);
 } // end extractPositionsGPU
 
+__device__ __host__ float signDev(float x1, float y1,
+                                  float x2, float y2,
+                                  float x3, float y3) {
+    return (x1 - x3) * (y2 - y3) -
+           (x2 - x3) * (y1 - y3);
+}
+
+__device__ __host__ bool pointInTriangleDev(
+    float px, float py,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3) {
+
+    float d1 = signDev(px, py, x1, y1, x2, y2);
+    float d2 = signDev(px, py, x2, y2, x3, y3);
+    float d3 = signDev(px, py, x3, y3, x1, y1);
+
+    bool hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    bool hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    return !(hasNeg && hasPos);
+}
+
+// Squared distance from P to closest point on segment AB; writes that closest point.
+__device__ __host__ static float closestPointOnSegmentSq(
+    float px, float py,
+    float ax, float ay, float bx, float by,
+    float* outSx, float* outSy) {
+
+    float abx = bx - ax;
+    float aby = by - ay;
+    float apx = px - ax;
+    float apy = py - ay;
+    float ab2 = abx * abx + aby * aby;
+    float t = 0.0f;
+    if (ab2 > 1e-20f)
+        t = fminf(1.0f, fmaxf(0.0f, (apx * abx + apy * aby) / ab2));
+
+    float sx = ax + t * abx;
+    float sy = ay + t * aby;
+    *outSx = sx;
+    *outSy = sy;
+
+    float dx = px - sx;
+    float dy = py - sy;
+    return dx * dx + dy * dy;
+}
+
+// Closest point on the three edges of the triangle (boundary), and its squared distance.
+__device__ __host__ static float closestPointOnTriangleBoundarySq(
+    float px, float py,
+    float x1, float y1, float x2, float y2, float x3, float y3,
+    float* outCx, float* outCy) {
+
+    float sx, sy;
+    float bestSq = closestPointOnSegmentSq(px, py, x1, y1, x2, y2, &sx, &sy);
+    *outCx = sx;
+    *outCy = sy;
+
+    float sx2, sy2;
+    float d2 = closestPointOnSegmentSq(px, py, x2, y2, x3, y3, &sx2, &sy2);
+    if (d2 < bestSq) {
+        bestSq = d2;
+        *outCx = sx2;
+        *outCy = sy2;
+    }
+
+    float sx3, sy3;
+    float d3 = closestPointOnSegmentSq(px, py, x3, y3, x1, y1, &sx3, &sy3);
+    if (d3 < bestSq) {
+        bestSq = d3;
+        *outCx = sx3;
+        *outCy = sy3;
+    }
+
+    return bestSq;
+}
+
+// Circle vs filled triangle: resolve penetration using closest boundary point,
+// outward normal, and velocity reflection (matches wall restitution).
+__device__ __host__ static void resolveParticleTriangleCollision(
+    Particle* p,
+    float x1, float y1, float x2, float y2, float x3, float y3) {
+
+    const float eps = 3e-4f;
+    const float r = p->r;
+    float px = p->x;
+    float py = p->y;
+
+    float cx, cy;
+    float distSq = closestPointOnTriangleBoundarySq(
+        px, py, x1, y1, x2, y2, x3, y3, &cx, &cy);
+    float dist = sqrtf(distSq);
+
+    bool inside = pointInTriangleDev(px, py, x1, y1, x2, y2, x3, y3);
+
+    if (!inside && dist >= r - 1e-9f)
+        return;
+
+    float nx, ny;
+    if (dist < 1e-7f) {
+        float gx = (x1 + x2 + x3) * (1.0f / 3.0f);
+        float gy = (y1 + y2 + y3) * (1.0f / 3.0f);
+        nx = px - gx;
+        ny = py - gy;
+        float nl = sqrtf(nx * nx + ny * ny);
+        if (nl < 1e-8f)
+            return;
+        nx /= nl;
+        ny /= nl;
+        if (!inside) {
+            nx = -nx;
+            ny = -ny;
+        }
+    } else if (inside) {
+        nx = (cx - px) / dist;
+        ny = (cy - py) / dist;
+    } else {
+        nx = (px - cx) / dist;
+        ny = (py - cy) / dist;
+    }
+
+    p->x = cx + nx * (r + eps);
+    p->y = cy + ny * (r + eps);
+
+    float vn = p->vx * nx + p->vy * ny;
+    if (vn < 0.0f) {
+        float j = -(1.0f + RESTITUTION) * vn;
+        p->vx += j * nx;
+        p->vy += j * ny;
+    }
+}
+
+__global__ void triangleCollisionKernel(
+    Particle* particles,
+    int n,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3) {
+
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= n)
+        return;
+
+    resolveParticleTriangleCollision(
+        &particles[i], x1, y1, x2, y2, x3, y3);
+}
+
+void collideParticlesWithTriangleCPU(
+    Particle* particles,
+    int n,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3) {
+
+    for (int i = 0; i < n; ++i)
+        resolveParticleTriangleCollision(
+            &particles[i], x1, y1, x2, y2, x3, y3);
+}
+
+void collideParticlesWithTriangleGPU(
+    Particle* d_particles,
+    int n,
+    float x1, float y1,
+    float x2, float y2,
+    float x3, float y3) {
+
+    int gridSize =
+        (n + BLOCK_SIZE - 1) /
+        BLOCK_SIZE;
+
+    triangleCollisionKernel<<<gridSize,
+                              BLOCK_SIZE>>>(
+        d_particles,
+        n,
+        x1, y1,
+        x2, y2,
+        x3, y3);
+}
 
 void freeParticlesGPU(Particle* d_particles) {
     cudaFree(d_particles);
