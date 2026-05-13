@@ -28,17 +28,15 @@ void initParticlesCPU(Particle* particles, int n) {
 }; // end initParticlesCPU
 
 
-// Updates particle physics: gravity, wind, integration, wall bouncing,
+// Updates particle physics: gravity, integration, wall bouncing,
 // and bottom-exit respawn.
 void updateParticlesCPU(Particle* particles, int n, float dt,
                         float gravityY,
-                        float windX, float spawnSpeed, unsigned int seed) {
+                        float spawnSpeed, unsigned int seed) {
     for (int i = 0; i < n; i++) {
         const float r = particles[i].r;
 
-        // Apply gravity and horizontal wind
         particles[i].vy += gravityY * dt;
-        particles[i].vx += windX  * dt;
 
         // Integrate position
         particles[i].x += particles[i].vx * dt;

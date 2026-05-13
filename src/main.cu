@@ -46,8 +46,8 @@ struct Triangle {
 
 Triangle gTriangle = {
     -0.2f, -0.1f,
-     0.2f, -0.1f,
-     0.0f,  0.3f
+    0.2f, -0.1f,
+    0.0f,  0.3f
 };
 
 bool draggingTriangle = false;
@@ -60,7 +60,6 @@ float dragOffsetY = 0.0f;
 
 bool  useGPU     = false; // starts in CPU mode
 int   currentN   = 10000; // starts with 10k particles
-float windX      = 0.0f;  // horizontal wind strength (NDC/s)
 float spawnSpeed = 0.5f;  // downward respawn speed (NDC/s); forced to 0 while zero-G is on
 
 // Restored when leaving zero-G (see Z key).
@@ -338,14 +337,18 @@ void keyCallback(GLFWwindow* window,
 
 int main() {
 
+    // GLFW and GL setup
     if (!glfwInit()) {
         std::cerr << "GLFW init failed\n";
         return -1;
     }
 
+    // Request OpenGL 4.6 core profile (for VAOs, gl_PointCoord, etc.).
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    // Create window and GL context
     GLFWwindow* window =
         glfwCreateWindow(
             (int)VIEWPORT_W,
@@ -354,15 +357,19 @@ int main() {
             nullptr,
             nullptr);
 
+    // Check window creation
     if (!window) {
         std::cerr << "Window failed\n";
         return -1;
     }
 
+    // Make GL context current
     glfwMakeContextCurrent(window);
 
+    // Set key callback for input handling
     glfwSetKeyCallback(window, keyCallback);
 
+    // Load OpenGL functions with GLAD (after context creation)
     if (!gladLoadGLLoader(
         (GLADloadproc)glfwGetProcAddress)) {
 
@@ -372,13 +379,9 @@ int main() {
 
     glEnable(GL_PROGRAM_POINT_SIZE);
 
-    GLuint vertShader =
-        compileShader(GL_VERTEX_SHADER,
-                       vertexShaderSrc);
+    GLuint vertShader = compileShader(GL_VERTEX_SHADER, vertexShaderSrc);
 
-    GLuint fragShader =
-        compileShader(GL_FRAGMENT_SHADER,
-                       fragmentShaderSrc);
+    GLuint fragShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSrc);
 
     GLuint shaderProgram = glCreateProgram();
 
@@ -634,15 +637,17 @@ int main() {
 
         if (useGPU) {
 
+            // Update particles, applying gravity, integration, wall bouncing, and respawn.
             updateParticlesGPU(
                 d_particles,
                 currentN,
                 simDt,
                 gravityY,
-                windX,
                 spawnSpeed,
-                frameCount);
+                frameCount
+            );
 
+            // Apply mouse attraction if right button is held.
             if (attractPressed)
                 applyAttractionGPU(
                     d_particles,
@@ -651,6 +656,7 @@ int main() {
                     my,
                     simDt);
 
+            // Collide with the triangle obstacle
             collideParticlesWithTriangleGPU(
                 d_particles,
                 currentN,
@@ -661,16 +667,19 @@ int main() {
             float* d_positions = nullptr;
             size_t size = 0;
 
+            // Map VBO to get device pointer for positions
             cudaGraphicsMapResources(
                 1,
                 &cudaVBOResource,
                 0);
 
+            // Extract particle positions into the VBO for rendering
             cudaGraphicsResourceGetMappedPointer(
                 (void**)&d_positions,
                 &size,
                 cudaVBOResource);
 
+            // Extract positions from particle array to VBO
             extractPositionsGPU(
                 d_particles,
                 d_positions,
@@ -688,7 +697,6 @@ int main() {
                 currentN,
                 simDt,
                 gravityY,
-                windX,
                 spawnSpeed,
                 frameCount);
 

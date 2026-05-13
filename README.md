@@ -2,7 +2,7 @@
 
 **CS4220 — GPU Computing**
 
-Real-time 2D particle simulation in OpenGL normalized device coordinates (NDC), with a **CPU reference path** and a **CUDA GPU path** you can toggle at runtime. Physics includes gravity, wind, wall bounces, bottom respawn, **mouse attraction**, **circle–triangle collisions** with a draggable obstacle, and optional **zero-gravity** / **slow-motion** modes. Positions are pushed to the GPU through **CUDA–OpenGL buffer interop** (registered VBO) to avoid per-frame host copies when using the GPU.
+Real-time 2D particle simulation in OpenGL normalized device coordinates (NDC), with a **CPU reference path** and a **CUDA GPU path** you can toggle at runtime. Physics includes gravity, wall bounces, bottom respawn, **mouse attraction**, **circle–triangle collisions** with a draggable obstacle, and optional **zero-gravity** / **slow-motion** modes. Positions are pushed to the GPU through **CUDA–OpenGL buffer interop** (registered VBO) to avoid per-frame host copies when using the GPU.
 
 ---
 
@@ -123,7 +123,6 @@ particle-sim/
 - **Particle:** `Particle` in `particle.h` — position, velocity, fixed radius `r` in NDC (currently `R_MIN` = `R_MAX` = **0.0025f** for uniform point size).
 - **Integrator:** semi-implicit Euler each frame: apply acceleration, then integrate position with the (possibly slow-mo scaled) timestep.
 - **Walls:** Left, right, top, and bottom; bottom crossing **respawns** at the top with hashed random **x** and small **y** jitter (CPU and GPU use the same hash idea).
-- **Wind:** Horizontal acceleration `windX` (constant in code; default **0** in `main.cu`).
 - **Gravity:** `BASE_GRAVITY` = **-9.8** (NDC/s² style scale) from `main.cu`, passed into updates as `gravityY` (**0** when zero-G is on).
 - **Restitution:** **0.8** on wall bounces (CPU/GPU aligned).
 
@@ -140,7 +139,6 @@ particle-sim/
 | `BASE_GRAVITY` | `-9.8f` | Downward acceleration when gravity is on |
 | `SLOW_MO_FACTOR` | `0.25f` | `dt` multiplier when slow-mo is on |
 | `VIEWPORT_W` / `H` | `1920` / `1080` | Window size used for mouse NDC mapping and point size |
-| `windX` | `0.0f` | Constant horizontal wind (edit in code if desired) |
 | `spawnSpeed` | `0.5f` | Downward speed assigned on respawn (overridden while zero-G is active) |
 
 CUDA block size for kernels is **256** (`BLOCK_SIZE` in `particle_gpu.cu`).
