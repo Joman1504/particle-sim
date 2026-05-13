@@ -88,6 +88,10 @@ A **1920×1080** window opens with **10,000** colored point-sprite particles, a 
 | **2** | Set particle count to **100,000** |
 | **3** | Set particle count to **1,000,000** |
 | **4** | Set particle count to **10,000,000** |
+| **5** | Set particle count to **25,000,000** |
+| **6** | Set particle count to **5000,000** |
+| **7** | Set particle count to **75,000,000** |
+| **8** | Set particle count to **100,000,000** |
 | **Left mouse** (hold) | **Drag the triangle** when the cursor starts inside it. |
 | **Right mouse** (hold) | **Attract** particles toward the cursor (inverse-square style force). |
 | **Z** | Toggle **zero gravity** (`gravityY = 0`). While on, **respawn / spawn speed** is set to **0** and restored when you turn zero-G off. |
