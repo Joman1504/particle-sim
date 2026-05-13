@@ -84,6 +84,10 @@ A **1920×1080** window opens with **10,000** colored point-sprite particles, a 
 | **G** | Toggle **CPU** ↔ **GPU** simulation (copies particle state across the toggle). |
 | **+** / **=** | Increase particle count by **10,000** (clamped to `MAX_N`). |
 | **-** | Decrease particle count by **10,000** (clamped to `MIN_N`). |
+| **1** | Set particle count to **10,000** |
+| **2** | Set particle count to **100,000** |
+| **3** | Set particle count to **1,000,000** |
+| **4** | Set particle count to **10,000,000** |
 | **Left mouse** (hold) | **Drag the triangle** when the cursor starts inside it. |
 | **Right mouse** (hold) | **Attract** particles toward the cursor (inverse-square style force). |
 | **Z** | Toggle **zero gravity** (`gravityY = 0`). While on, **respawn / spawn speed** is set to **0** and restored when you turn zero-G off. |
