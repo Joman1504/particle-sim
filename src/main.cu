@@ -25,6 +25,12 @@ const int   MIN_N  = 100;
 const int   STEP_N = 10000;
 const float DT     = 0.016f;
 
+// Same magnitude as simulation gravity when gravity is on (must match physics files).
+const float BASE_GRAVITY = -9.8f;
+
+// dt multiplier when combined float + slow-mo mode is on.
+const float SLOW_MO_FACTOR = 0.25f;
+
 const float VIEWPORT_W = 1920.0f;
 const float VIEWPORT_H = 1080.0f;
 
@@ -56,6 +62,9 @@ bool  useGPU     = false;
 int   currentN   = 10000;
 float windX      = 0.0f;
 float spawnSpeed = 0.5f;
+
+// Zero-G + slow-mo together (toggle with M).
+bool floatSlowMo = false;
 
 // ============================================================
 // Host arrays
@@ -273,6 +282,15 @@ void keyCallback(GLFWwindow* window,
        (action == GLFW_PRESS ||
         action == GLFW_REPEAT))
         setParticleCount(currentN - STEP_N);
+
+    if (key == GLFW_KEY_M &&
+        action == GLFW_PRESS) {
+
+        floatSlowMo = !floatSlowMo;
+
+        std::cout << "[Float + slow-mo] "
+                  << (floatSlowMo ? "on\n" : "off\n");
+    }
 }
 
 // ============================================================
@@ -569,12 +587,19 @@ int main() {
         static unsigned int frameCount = 0;
         frameCount++;
 
+        const float gravityY =
+            floatSlowMo ? 0.0f : BASE_GRAVITY;
+
+        const float simDt =
+            DT * (floatSlowMo ? SLOW_MO_FACTOR : 1.0f);
+
         if (useGPU) {
 
             updateParticlesGPU(
                 d_particles,
                 currentN,
-                DT,
+                simDt,
+                gravityY,
                 windX,
                 spawnSpeed,
                 frameCount);
@@ -585,7 +610,7 @@ int main() {
                     currentN,
                     mx,
                     my,
-                    DT);
+                    simDt);
 
             collideParticlesWithTriangleGPU(
                 d_particles,
@@ -622,7 +647,8 @@ int main() {
             updateParticlesCPU(
                 h_particles,
                 currentN,
-                DT,
+                simDt,
+                gravityY,
                 windX,
                 spawnSpeed,
                 frameCount);
@@ -633,7 +659,7 @@ int main() {
                     currentN,
                     mx,
                     my,
-                    DT);
+                    simDt);
 
             collideParticlesWithTriangleCPU(
                 h_particles,
@@ -727,14 +753,15 @@ int main() {
                     : (fpsDisplay * 0.9 + instantFps * 0.1);
         }
 
-        char titleBuf[192];
+        char titleBuf[256];
         std::snprintf(
             titleBuf,
             sizeof(titleBuf),
-            "Particle Sim | %s | N = %d | %.1f FPS",
+            "Particle Sim | %s | N = %d | %.1f FPS | %s",
             useGPU ? "GPU" : "CPU",
             currentN,
-            fpsDisplay);
+            fpsDisplay,
+            floatSlowMo ? "float+slo-mo" : "standard");
 
         glfwSetWindowTitle(window, titleBuf);
     }

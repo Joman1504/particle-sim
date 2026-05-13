@@ -5,7 +5,6 @@
 #include "particle.h"
 #include <cstdlib>
 
-const float GRAVITY     = -9.8f;
 const float BOUND_X     = 1.0f; // boundary: -1.0 to 1.0 (OpenGL NDC)
 const float BOUND_Y     = 1.0f;
 const float RESTITUTION = 0.8f; // bounciness (1.0 = perfectly elastic)
@@ -32,12 +31,13 @@ void initParticlesCPU(Particle* particles, int n) {
 // Updates particle physics: gravity, wind, integration, wall bouncing,
 // and bottom-exit respawn.
 void updateParticlesCPU(Particle* particles, int n, float dt,
+                        float gravityY,
                         float windX, float spawnSpeed, unsigned int seed) {
     for (int i = 0; i < n; i++) {
         const float r = particles[i].r;
 
         // Apply gravity and horizontal wind
-        particles[i].vy += GRAVITY * dt;
+        particles[i].vy += gravityY * dt;
         particles[i].vx += windX  * dt;
 
         // Integrate position

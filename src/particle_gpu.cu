@@ -9,7 +9,6 @@
 #include <cuda_runtime.h>
 
 // ---- Physics constants (must match particle_cpu.cpp) ---- //
-#define GRAVITY     -9.8f
 #define BOUND_X      1.0f
 #define BOUND_Y      1.0f
 #define RESTITUTION  0.8f
@@ -25,6 +24,7 @@
 // Respawn uses a fast integer hash of (particle index, seed) to pick a
 // pseudo-random X so the top edge fills evenly across frames.
 __global__ void updateKernel(Particle* particles, int n, float dt,
+                              float gravityY,
                               float windX, float spawnSpeed, unsigned int seed) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n) return;
@@ -32,7 +32,7 @@ __global__ void updateKernel(Particle* particles, int n, float dt,
     const float r = particles[i].r;
 
     // Apply gravity and horizontal wind
-    particles[i].vy += GRAVITY * dt;
+    particles[i].vy += gravityY * dt;
     particles[i].vx += windX  * dt;
 
     // Integrate position
@@ -131,9 +131,11 @@ void initParticlesGPU(Particle** d_particles, int n) {
 
 
 void updateParticlesGPU(Particle* d_particles, int n, float dt,
+                        float gravityY,
                         float windX, float spawnSpeed, unsigned int seed) {
     int gridSize = (n + BLOCK_SIZE - 1) / BLOCK_SIZE;
     updateKernel<<<gridSize, BLOCK_SIZE>>>(d_particles, n, dt,
+                                           gravityY,
                                            windX, spawnSpeed, seed);
 } // end updateParticlesGPU
 
