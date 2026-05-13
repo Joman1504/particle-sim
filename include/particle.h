@@ -4,8 +4,7 @@
 #pragma once
 
 // ---- Particle radius range (NDC units) ---- //
-// Used by init, boundary checks, and (upcoming) collision detection.
-// Cell size for the uniform collision grid = 2 * R_MAX.
+// Set R_MIN = R_MAX for uniform size, or use a range for variety.
 constexpr float R_MIN = 0.0025f;
 constexpr float R_MAX = 0.0025f;
 
