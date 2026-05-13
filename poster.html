@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CS4220 — Particle Sim Poster (print to PDF)</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #e8eaf0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: #1a1d26;
+      font-size: 10.5pt;
+      line-height: 1.35;
+    }
+
+    .sheet {
+      width: 277mm;
+      min-height: 190mm;
+      margin: 8mm auto;
+      background: #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0,.12);
+      padding: 10mm 11mm;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 7mm;
+    }
+
+    @media print {
+      html, body { background: #fff; }
+      .sheet {
+        width: auto;
+        min-height: auto;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+      }
+      .no-print { display: none !important; }
+    }
+
+    header.banner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 6mm;
+      padding-bottom: 5mm;
+      border-bottom: 3px solid #1a237e;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1a237e;
+      line-height: 1.1;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 9.5pt;
+      color: #444;
+    }
+
+    .meta strong { color: #1a237e; }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 7mm;
+      align-items: start;
+    }
+
+    section.block {
+      background: #f7f8fc;
+      border: 1px solid #d5d9e6;
+      border-radius: 4px;
+      padding: 5mm 5.5mm;
+      height: 100%;
+    }
+
+    section.block h2 {
+      margin: 0 0 3mm 0;
+      font-size: 11pt;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #3949ab;
+      border-left: 4px solid #ff6f00;
+      padding-left: 3mm;
+    }
+
+    section.block p { margin: 0 0 2.5mm 0; }
+
+    ul {
+      margin: 0;
+      padding-left: 4.5mm;
+    }
+    li { margin-bottom: 1.5mm; }
+
+    .pipeline {
+      margin-top: 2mm;
+      width: 100%;
+      height: auto;
+    }
+
+    .code {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 8.5pt;
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 3mm 3.5mm;
+      border-radius: 3px;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    table.results {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin-top: 2mm;
+    }
+    table.results th,
+    table.results td {
+      border: 1px solid #c5cad8;
+      padding: 2mm 2.5mm;
+      text-align: left;
+    }
+    table.results th {
+      background: #1a237e;
+      color: #fff;
+      font-weight: 600;
+    }
+    table.results tr:nth-child(even) td { background: #eef1f8; }
+
+    .footnote {
+      font-size: 8pt;
+      color: #555;
+      margin-top: 2mm;
+    }
+
+    .takeaway {
+      background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+      border: 2px solid #ff8f00;
+      border-radius: 4px;
+      padding: 4mm 5mm;
+      font-weight: 600;
+      font-size: 10.5pt;
+      color: #4a3000;
+    }
+
+    footer.row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6mm;
+      font-size: 9pt;
+      color: #444;
+      border-top: 1px solid #ccc;
+      padding-top: 4mm;
+    }
+
+    .demo-box {
+      flex: 1;
+      background: #e8eaf6;
+      padding: 3mm 4mm;
+      border-radius: 3px;
+      border: 1px dashed #5c6bc0;
+    }
+
+    .no-print {
+      max-width: 277mm;
+      margin: 4mm auto 0;
+      padding: 3mm 5mm;
+      font-size: 9pt;
+      color: #333;
+      background: #fffde7;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <p class="no-print">
+    <strong>Save as 1-page PDF:</strong> Open this file in Chrome or Edge → <kbd>Ctrl</kbd>+<kbd>P</kbd> → Destination “Save as PDF” → Paper size <strong>A4 landscape</strong> → Margins <strong>Default</strong> → enable <strong>Background graphics</strong> → Save.
+    Table values are measured in-app (window title FPS). Keys <strong>1–4</strong> jump to each benchmark <strong>N</strong>.
+  </p>
+
+  <article class="sheet">
+    <header class="banner">
+      <div>
+        <h1>GPU-Accelerated 2D Particle Simulation</h1>
+        <p style="margin:2mm 0 0;font-size:11pt;color:#444;">
+          Real-time CUDA physics + OpenGL rendering with CPU/GPU comparison
+        </p>
+      </div>
+      <div class="meta">
+        <strong>CS4220 — GPU Computing</strong><br />
+        <span>Author: _______________________</span><br />
+        <span>Hardware: Intel i7-13700K · RTX 4080 (sm_89) · CUDA / GLFW / GLAD</span>
+      </div>
+    </header>
+
+    <div class="cols">
+      <!-- Column 1: Idea + partial problem -->
+      <section class="block">
+        <h2>Project idea</h2>
+        <p>
+          Build an interactive <strong>many-particle</strong> toy simulation in normalized device coordinates (NDC):
+          gravity, bottom respawn, wall bounces, <strong>mouse attraction</strong>, and collisions with a
+          <strong>movable triangle obstacle</strong>.
+        </p>
+        <p>
+          The core question: <em>Can massively parallel GPU execution overcome the scalability bottleneck of sequential CPU particle updates?</em>
+          The app toggles between a <strong>sequential CPU path</strong> and a <strong>CUDA one-thread-per-particle GPU path</strong>
+          (press <strong>G</strong>) to compare FPS, frame time, and maximum real-time particle count directly.
+        </p>
+        <h2 style="margin-top:4mm;">Interactive Features</h2>
+        <ul>
+          <li><strong>Physics</strong> — gravity, elastic wall bouncing (restitution 0.8), bottom-exit respawn with randomized re-entry.</li>
+          <li><strong>Obstacles &amp; interaction</strong> — draggable triangle with circle–edge collision; right-mouse inverse-square attraction force.</li>
+          <li><strong>Runtime controls</strong> — zero-gravity (<strong>Z</strong>), slow-motion (<strong>M</strong>), particle count presets 10k–10M (<strong>1–4</strong>).</li>
+        </ul>
+      </section>
+
+      <!-- Column 2: Methods / pipeline -->
+      <section class="block">
+        <h2>Methods / pipeline</h2>
+        <ul>
+          <li><strong>CPU:</strong> <code>updateParticlesCPU</code> — nested loops, same integrator &amp; bounds as GPU.</li>
+          <li><strong>GPU:</strong> CUDA kernels, block size <strong>256</strong>; one thread updates one particle per frame.</li>
+          <li><strong>Interop:</strong> CUDA registers the OpenGL position VBO (<code>cudaGraphicsGLRegisterBuffer</code>); each frame positions are written on device, avoiding host staging.</li>
+          <li><strong>Collision:</strong> circle vs triangle — closest point on edges, outward normal, position correction + velocity reflection (shared host/device logic).</li>
+        </ul>
+
+        <svg class="pipeline" viewBox="0 0 340 130" xmlns="http://www.w3.org/2000/svg" aria-label="Per-frame pipeline diagram">
+          <defs>
+            <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#3949ab" />
+            </marker>
+            <marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#888" />
+            </marker>
+          </defs>
+
+          <!-- d_particles (GPU buffer) -->
+          <rect x="2" y="44" width="56" height="42" rx="4" fill="#e8eaf6" stroke="#3949ab" stroke-width="1.5"/>
+          <text x="30" y="62" text-anchor="middle" font-size="8" font-weight="bold" fill="#1a237e" font-family="Segoe UI,sans-serif">d_particles</text>
+          <text x="30" y="75" text-anchor="middle" font-size="7.5" fill="#3949ab" font-family="Segoe UI,sans-serif">(GPU mem)</text>
+
+          <!-- arrow -->
+          <line x1="58" y1="65" x2="74" y2="65" stroke="#3949ab" stroke-width="1.5" marker-end="url(#ar)"/>
+
+          <!-- updateKernel -->
+          <rect x="74" y="34" width="62" height="42" rx="4" fill="#fff3e0" stroke="#ff6f00" stroke-width="1.5"/>
+          <text x="105" y="52" text-anchor="middle" font-size="8" font-weight="bold" fill="#bf360c" font-family="Segoe UI,sans-serif">update</text>
+          <text x="105" y="63" text-anchor="middle" font-size="7.5" fill="#bf360c" font-family="Segoe UI,sans-serif">Kernel</text>
+          <text x="105" y="74" text-anchor="middle" font-size="7" fill="#888" font-family="Segoe UI,sans-serif">gravity·walls·respawn</text>
+
+          <!-- arrow -->
+          <line x1="136" y1="55" x2="150" y2="55" stroke="#3949ab" stroke-width="1.5" marker-end="url(#ar)"/>
+
+          <!-- optional kernels stacked -->
+          <rect x="150" y="22" width="54" height="28" rx="3" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.2"/>
+          <text x="177" y="37" text-anchor="middle" font-size="8" fill="#1b5e20" font-family="Segoe UI,sans-serif">attraction</text>
+          <text x="177" y="47" text-anchor="middle" font-size="7" fill="#555" font-family="Segoe UI,sans-serif">(optional)</text>
+
+          <rect x="150" y="58" width="54" height="28" rx="3" fill="#fce4ec" stroke="#c2185b" stroke-width="1.2"/>
+          <text x="177" y="73" text-anchor="middle" font-size="8" fill="#880e4f" font-family="Segoe UI,sans-serif">triangle</text>
+          <text x="177" y="83" text-anchor="middle" font-size="7" fill="#555" font-family="Segoe UI,sans-serif">(collision)</text>
+
+          <!-- arrow -->
+          <line x1="204" y1="55" x2="218" y2="55" stroke="#3949ab" stroke-width="1.5" marker-end="url(#ar)"/>
+
+          <!-- extract → VBO (interop) -->
+          <rect x="218" y="34" width="64" height="42" rx="4" fill="#fdf3ff" stroke="#7b1fa2" stroke-width="1.5"/>
+          <text x="250" y="50" text-anchor="middle" font-size="8" font-weight="bold" fill="#6a1b9a" font-family="Segoe UI,sans-serif">extract</text>
+          <text x="250" y="61" text-anchor="middle" font-size="7.5" fill="#6a1b9a" font-family="Segoe UI,sans-serif">→ pos VBO</text>
+          <text x="250" y="72" text-anchor="middle" font-size="7" fill="#888" font-family="Segoe UI,sans-serif">CUDA–GL interop</text>
+
+          <!-- arrow -->
+          <line x1="282" y1="55" x2="296" y2="55" stroke="#3949ab" stroke-width="1.5" marker-end="url(#ar)"/>
+
+          <!-- GL draw -->
+          <rect x="296" y="34" width="42" height="42" rx="4" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+          <text x="317" y="52" text-anchor="middle" font-size="8" font-weight="bold" fill="#0d47a1" font-family="Segoe UI,sans-serif">GL</text>
+          <text x="317" y="63" text-anchor="middle" font-size="7.5" fill="#0d47a1" font-family="Segoe UI,sans-serif">draw</text>
+          <text x="317" y="74" text-anchor="middle" font-size="7" fill="#888" font-family="Segoe UI,sans-serif">points+tri</text>
+
+          <!-- loop-back arrow under the diagram -->
+          <path d="M317 76 Q317 112 30 112 Q30 90 30 86" fill="none" stroke="#aaa" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
+          <text x="174" y="124" text-anchor="middle" font-size="7.5" fill="#888" font-family="Segoe UI,sans-serif">next frame</text>
+        </svg>
+
+        <h2 style="margin-top:3mm;">Implementation snapshot</h2>
+        <div class="code">updateKernel &lt;&lt;&lt; grid, 256 &gt;&gt;&gt;(d_parts, n, dt,
+    gravityY, spawnSpeed, seed);</div>
+      </section>
+
+      <!-- Column 3: Results + takeaway -->
+      <section class="block">
+        <h2>Results / timings</h2>
+        <p style="font-size:9.5pt;">Framerates (FPS) read from the <strong>window title</strong> after setting <strong>N</strong> with keys <strong>1–4</strong> on our reference PC (see footnote).</p>
+        <table class="results">
+          <thead>
+            <tr>
+              <th>N particles</th>
+              <th>CPU FPS</th>
+              <th>GPU FPS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>10,000 <span style="font-size:8pt;color:#555;">(key 1)</span></td>
+              <td>144</td>
+              <td>144</td>
+            </tr>
+            <tr>
+              <td>100,000 <span style="font-size:8pt;color:#555;">(key 2)</span></td>
+              <td>130</td>
+              <td>144</td>
+            </tr>
+            <tr>
+              <td>1,000,000 <span style="font-size:8pt;color:#555;">(key 3)</span></td>
+              <td>13.3</td>
+              <td>144</td>
+            </tr>
+            <tr>
+              <td>10,000,000 <span style="font-size:8pt;color:#555;">(key 4)</span></td>
+              <td>1.4</td>
+              <td>144</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="footnote">Measured on <strong>Intel i7-13700K</strong> + <strong>RTX 4080</strong> (Windows); each row uses <strong>G</strong> to switch CPU vs GPU with the same <strong>N</strong>. GPU FPS stays display-limited (~144&nbsp;Hz) across this range; CPU throughput falls roughly linearly with <strong>N</strong> in this implementation.</p>
+
+        <h2 style="margin-top:4mm;">Key takeaway</h2>
+        <div class="takeaway">
+          Massively parallel CUDA maps naturally to independent particles; pairing it with CUDA–OpenGL buffer interop keeps the render path cheap. The GPU path is the practical way to sustain high <strong>N</strong> at interactive frame rates.
+        </div>
+      </section>
+    </div>
+
+    <footer class="row">
+      <div class="demo-box">
+        <strong>GitHub Repository:</strong> <a href="https://github.com/Joman1504/particle-sim" style="color:#1a237e;">https://github.com/Joman1504/particle-sim</a>
+      </div>
+      <div style="text-align:right;max-width:42%;">
+      </div>
+    </footer>
+  </article>
+</body>
+</html>

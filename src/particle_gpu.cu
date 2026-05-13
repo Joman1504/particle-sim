@@ -24,13 +24,14 @@
 // Respawn uses a fast integer hash of (particle index, seed) to pick a
 // pseudo-random X so the top edge fills evenly across frames.
 __global__ void updateKernel(Particle* particles, int n, float dt,
-                              float gravityY,
-                              float spawnSpeed, unsigned int seed) {
+                            float gravityY,
+                            float spawnSpeed, unsigned int seed) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n) return;
 
     const float r = particles[i].r;
 
+    // Apply gravity
     particles[i].vy += gravityY * dt;
 
     // Integrate position

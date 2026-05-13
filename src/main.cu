@@ -20,9 +20,9 @@
 // Simulation constants
 // ============================================================
 
-const int   MAX_N  = 10000000; // Upper particle count limit (GPU mem limit).
-const int   MIN_N  = 1000;      // Lower particle count limit (for UI).
-const int   STEP_N = 10000;     // Particle count change step when pressing +/-.
+const int   MAX_N  = 100000000; // Upper particle count limit 
+const int   MIN_N  = 1000;      // Lower particle count limit 
+const int   STEP_N = 100000;     // Particle count change step when pressing +/-.
 const float DT     = 0.016f;    // Simulation timestep (seconds per frame).
 
 // Same magnitude as simulation gravity when gravity is on (must match physics files).
